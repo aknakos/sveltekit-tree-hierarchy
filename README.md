@@ -1,4 +1,4 @@
-# Tree-structure component
+# Tree-structure component for SvelteKit
 
 Tree-structure component with slotting, tailwindcss and integrated search.
 
