@@ -1,9 +1,39 @@
 <script lang="ts">
 	import Tree from '$lib/treeView/Tree.svelte';
+	import type { DataI } from '$lib/types/tree.type.js';
 
 	let search = ''; // some search text;
 
 	let allowEdit = true;
+
+	let data: DataI = [
+		{
+			id: 1,
+			name: 'First Folder',
+			children: [
+				{
+					id: 11,
+					name: 'First Subfolder',
+					children: [
+						{
+							id: 111,
+							name: 'Some Entry'
+						}
+					]
+				}
+			]
+		},
+		{
+			id: 2,
+			name: 'Second Folder',
+			children: [
+				{
+					id: 21,
+					name: 'Some Entry'
+				}
+			]
+		}
+	];
 </script>
 
 <div>
@@ -14,17 +44,11 @@
 </div>
 
 <div class="w-screen h-screen">
-	<Tree
-		{search}
-		allowReorder={allowEdit}
-		{allowEdit}
-		let:nodeKey
-		let:nodeKeyFull
-		let:treeLevel
-		let:address
-	>
-		<div>Leaf Slot {treeLevel}</div>
-		<div slot="new_folder">Add new folder here</div>
+	<Tree {search} allowReorder={allowEdit} {allowEdit} {data} folderValueKey="name">
+		<div slot="value" let:nodeKey let:nodeKeyFull let:treeLevel let:address>
+			Leaf Slot {treeLevel}
+		</div>
+		<div slot="new_folder">Create New Folder</div>
 		<div slot="no_content">No content..</div>
 	</Tree>
 </div>

@@ -44,6 +44,7 @@
 	export let flipDurationMs = 300;
 	export let allowReorder = false;
 	export let allowEdit = false;
+	export let folderValueKey = 'id';
 
 	let childExpanded: Record<string, boolean> = {};
 
@@ -66,6 +67,16 @@
 
 	export let search = '';
 	export let expanded = false;
+
+	function newFolder() {
+		let newData: DataBranchI = {
+			id: 'id-' + (Math.random() * 100000).toFixed(0).toString(),
+			children: []
+		};
+		if (folderValueKey !== 'id') newData[folderValueKey] = 'new';
+		data.push(newData);
+		data = data;
+	}
 
 	let searchData: Array<string> = search.trim().toLowerCase().split(' ');
 	$: searchData = search.trim().toLowerCase().split(' ');
@@ -91,26 +102,44 @@
 						<TreeBranch
 							nodeKeyFull={[datum.id.toString()]}
 							nodeKey={datum.id.toString()}
-							bind:data={datum.children}
+							bind:data={datum}
 							{allowReorder}
 							{allowEdit}
 							{flipDurationMs}
 							{searchData}
-							on:edit={(e) => (datum.id = e.detail)}
+							{folderValueKey}
+							on:delete={() => {
+								data.splice(index, 1);
+								data = data;
+							}}
 							address={index.toString()}
 							on:consider={handleDndConsider}
 							on:finalize={handleDndFinalize}
-							let:nodeKey
-							let:nodeKeyFull
-							let:treeLevel
-							let:address
 						>
-							<slot {nodeKey} {nodeKeyFull} {treeLevel} {address} />
+							<slot
+								let:nodeKey
+								let:nodeKeyFull
+								let:treeLevel
+								let:address
+								{nodeKey}
+								{nodeKeyFull}
+								{treeLevel}
+								{address}
+								name="value"
+								slot="value"
+							/>
 							<slot name="new_folder" slot="new_folder" />
 							<slot name="no_content" slot="no_content" />
 						</TreeBranch>
 					</div>
 				{/each}
+				{#if allowEdit}
+					<li>
+						<button class="btn btn-primary" on:click={newFolder}>
+							<slot name="new_folder">New Folder</slot>
+						</button>
+					</li>
+				{/if}
 			</section>
 		</ul>
 	</div>

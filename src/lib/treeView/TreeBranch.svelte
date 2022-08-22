@@ -11,13 +11,14 @@
 	export let expanded = false;
 	export let nodeKeyFull: Array<string>;
 	export let nodeKey: string;
-	export let data: DataI;
+	export let data: DataBranchI;
 	export let treeLevel = 0;
 	export let searchData: Array<string> = [];
 	export let address: string;
 	export let flipDurationMs = 300;
 	export let allowReorder = false;
 	export let allowEdit = false;
+	export let folderValueKey: string = 'id';
 	const dispatch = createEventDispatcher();
 
 	let childExpanded: Record<string, boolean> = {};
@@ -36,10 +37,10 @@
 	});
 
 	function handleDndConsider(e: { detail: DndEvent }) {
-		data = e.detail.items as DataI;
+		data.children = e.detail.items as DataI;
 	}
 	function handleDndFinalize(e: { detail: DndEvent }) {
-		data = e.detail.items as DataI;
+		data.children = e.detail.items as DataI;
 	}
 
 	function toggle() {
@@ -59,15 +60,22 @@
 	let mergedSearchData = '';
 	let editing = false;
 	let hovered = false;
+	let inputValue: string = data[folderValueKey].toString();
 	$: mergedSearchData = searchData.join(' ');
 
-	function newFolder() {
-		data.push({ id: 'NEW ENTRY', children: [] });
+	function newFolder(entry = false) {
+		if (!data?.children) data.children = [];
+		let newData: DataBranchI = {
+			id: 'id-' + (Math.random() * 100000).toFixed(0).toString()
+		};
+		if (folderValueKey !== 'id') newData[folderValueKey] = 'new';
+		if (!entry) newData['children'] = [];
+		data.children.push(newData);
 		data = data;
 	}
 
 	function deleteFolder() {
-		editing = true;
+		dispatch('delete');
 	}
 
 	function editFolder() {
@@ -82,7 +90,8 @@
 
 	function saveFolder() {
 		editing = false;
-		dispatch('edit', nodeKey);
+		data[folderValueKey] = inputValue;
+		data = data;
 	}
 
 	function hover() {
@@ -136,36 +145,38 @@
 				</div>
 				{#if editing}
 					<input
-						bind:value={nodeKey}
+						type="text"
+						bind:value={inputValue}
 						class="ml-4 flex-grow"
-						on:keypress={finishEditFolder}
+						on:keypress|stopPropagation={finishEditFolder}
+						on:click|preventDefault|stopPropagation={() => {}}
 						autofocus
 					/>
 					<button class="btn btn-warning ml-5" on:click={saveFolder}>Save</button>
 				{:else}
 					<div>
-						<TreeSpan label={nodeKey} {mergedSearchData} />
+						<TreeSpan label={data[folderValueKey]} {mergedSearchData} />
 						{#if allowEdit && hovered}
 							<button class="btn btn-warning ml-5" on:click={editFolder}>Edit</button>
-							<button class="btn btn-error" on:click={deleteFolder}>Delete</button>
+							<button class="btn btn-error ml-5" on:click={deleteFolder}>Delete</button>
 						{/if}
 					</div>
 				{/if}
 			</div>
 
 			{#if expanded}
-				{#if data}
+				{#if data?.children}
 					<ul
 						use:dndzone={{
-							items: data,
+							items: data.children,
 							flipDurationMs,
 							dragDisabled: !allowReorder || data.length === 0
 						}}
 						on:consider={handleDndConsider}
 						on:finalize={handleDndFinalize}
 					>
-						{#if data.length > 0}
-							{#each data?.filter((d) => d.id !== SHADOW_PLACEHOLDER_ITEM_ID) as datum, index (datum.id)}
+						{#if data.children.length > 0}
+							{#each data.children?.filter((d) => d.id !== SHADOW_PLACEHOLDER_ITEM_ID) as datum, index (datum.id)}
 								{@const keyFull = nodeKeyFull.concat(datum.id.toString())}
 								<div animate:flip={{ duration: flipDurationMs }} class="item">
 									{#if datum?.children}
@@ -175,22 +186,39 @@
 											treeLevel={treeLevel + 1}
 											{allowReorder}
 											{allowEdit}
-											bind:data={datum.children}
-											on:edit={(e) => (datum.id = e.detail)}
+											{folderValueKey}
+											bind:data={datum}
 											{searchData}
 											address={address + 'b' + index.toString()}
-											let:nodeKey
-											let:nodeKeyFull
-											let:treeLevel
-											let:address
+											on:delete={() => {
+												data.children?.splice(index, 1);
+												data = data;
+											}}
 										>
-											<slot {nodeKey} {nodeKeyFull} {treeLevel} {address} />
+											<slot
+												let:nodeKey
+												let:nodeKeyFull
+												let:treeLevel
+												let:address
+												{nodeKey}
+												{nodeKeyFull}
+												{treeLevel}
+												{address}
+												name="value"
+												slot="value"
+											/>
 											<slot name="new_folder" slot="new_folder" />
 											<slot name="no_content" slot="no_content" />
 										</svelte:self>
 									{:else}
 										<OptionalTransition allowTransition={!allowReorder}>
-											<slot {nodeKey} {nodeKeyFull} {treeLevel} {address} />
+											<slot
+												name="value"
+												nodeKey={datum.id.toString()}
+												nodeKeyFull={keyFull}
+												treeLevel={treeLevel + 1}
+												address={address + 'b' + index.toString()}
+											/>
 										</OptionalTransition>
 									{/if}
 								</div>
@@ -200,9 +228,12 @@
 						{/if}
 						{#if allowReorder}
 							<li>
-								<button class="btn btn-primary" on:click={newFolder}>
+								<button class="btn btn-secondary" on:click={() => newFolder(false)}>
 									<slot name="new_folder">New Folder</slot>
 								</button>
+								<!-- <button class="btn btn-secondary" on:click={() => newFolder(true)}>
+									<slot name="new_leaf">New Entry</slot>
+								</button> -->
 							</li>
 						{/if}
 					</ul>
