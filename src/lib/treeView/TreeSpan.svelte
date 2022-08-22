@@ -14,7 +14,7 @@
 	// }
 </script>
 
-<span class="outer-span ml-4 flex-grow highlight-wrapper">
+<span class="outer-span ml-4 flex-grow highlight-wrapper" on:dblclick>
 	{#each parse(label, matched) as p, i}
 		{#if p.highlight && label?.[matched?.[i / 2]?.[0] - 1] === ' '}
 			<span class="p-0 m-0 pl-1" />

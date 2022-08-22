@@ -1,6 +1,6 @@
 # Tree-structure component for SvelteKit
 
-Tree-structure component with slotting, tailwindcss and integrated search.
+Tree-structure component with slotting, tailwindcss, integrated search and editing.
 
 Usage:
 
@@ -17,3 +17,4 @@ Usage:
 ```
 
 Tree uses tailwindcss with classes for each branch/leaf and for the search matches, so you can customize using a global style if you wish.
+For full example with editing and search, see [the example project](./src/routes/+page.svelte).
