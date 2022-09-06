@@ -11,8 +11,8 @@ Usage:
 	let search = ''; // some search text;
 </script>
 
-<Tree {search} let:nodeKey let:nodeKeyFull let:treeLevel let:address>
-	<div>Leaf Slot {treeLevel}</div>
+<Tree {search}>
+	<div slot='value' let:nodeKey let:nodeKeyFull let:treeLevel let:address>Leaf Slot {treeLevel}</div>
 </Tree>
 ```
 

@@ -19,6 +19,7 @@
 	export let allowReorder = false;
 	export let allowEdit = false;
 	export let folderValueKey: string = 'id';
+	export let morphDisabled: false;
 	const dispatch = createEventDispatcher();
 
 	let childExpanded: Record<string, boolean> = {};
@@ -170,7 +171,8 @@
 						use:dndzone={{
 							items: data.children,
 							flipDurationMs,
-							dragDisabled: !allowReorder || data.length === 0
+							dragDisabled: !allowReorder || data.length === 0,
+							morphDisabled
 						}}
 						on:consider={handleDndConsider}
 						on:finalize={handleDndFinalize}

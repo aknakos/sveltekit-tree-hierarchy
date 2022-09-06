@@ -44,6 +44,7 @@
 	export let flipDurationMs = 300;
 	export let allowReorder = false;
 	export let allowEdit = false;
+	export let morphDisabled = false;
 	export let folderValueKey = 'id';
 
 	let childExpanded: Record<string, boolean> = {};
@@ -92,7 +93,8 @@
 				use:dndzone={{
 					items: data,
 					flipDurationMs,
-					dragDisabled: !allowReorder
+					dragDisabled: !allowReorder,
+					morphDisabled
 				}}
 				on:consider={handleDndConsider}
 				on:finalize={handleDndFinalize}
@@ -108,6 +110,7 @@
 							{flipDurationMs}
 							{searchData}
 							{folderValueKey}
+							{morphDisabled}
 							on:delete={() => {
 								data.splice(index, 1);
 								data = data;
